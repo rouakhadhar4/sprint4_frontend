@@ -1,3 +1,4 @@
+import { AuthService } from './../auth.service';
 import { Injectable } from '@angular/core';
 import { Vetement } from '../model/vetement.model';
 import { Genre } from '../model/genre.model';
@@ -8,6 +9,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { GenreWrapper } from '../model/genreWrapped.model';
 //import { GenreWrapper } from '../model/GenreWrapped.model';
 
+
 const httpOptions = {
 
   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -17,15 +19,18 @@ const httpOptions = {
   providedIn: 'root'
 })
 export class VetementService {
-  apiURL: string = 'http://localhost:8095/vetements/api'
-  apiURLgn: string = 'http://localhost:8095/vetements/gen';
+  
+  apiURL: string = 'http://localhost:8078/vetements/api'
+  apiURLgn: string ='http://localhost:8078/vetements/gen';
+  
 
 
   vetements!: Vetement[];
   //genres!:Genre[];
 
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private authService: AuthService) { 
+
     console.log('creation de service vetement');
     /*  this.genres=[{idGenre : 1, nomGenre : "tshirt", descriptionGenre :"nouvelle"},
        {idGenre : 2, nomGenre : "pul",descriptionGenre :"nouvelle" },
@@ -36,28 +41,38 @@ export class VetementService {
       { idVetement: 3, nomVetement: "veste", prix: 7000, dateCreation: new Date("2013-08-23"), couleur: "black", taille: "42",genre:{idGenre : 3, nomGenre : "chemise",descriptionGenre :"nouvelle" } }
     ];*/
   }
-
   listeVetements(): Observable<Vetement[]> {
-    return this.http.get<Vetement[]>(this.apiURL);
+    return this.http.get<Vetement[]>(this.apiURL + "/all");
   }
-
+  
 
 
 
   ajouterVetement(vet: Vetement): Observable<Vetement> {
-    return this.http.post<Vetement>(this.apiURL, vet, httpOptions);
+    let jwt = this.authService.getToken();
+    jwt = "Bearer "+jwt;
+    let httpHeaders = new HttpHeaders({"Authorization":jwt}) 
+      return this.http.post<Vetement>(this.apiURL+"/addvet", vet, {headers:httpHeaders});
   }
 
 
   supprimerVetement(id: number) {
-    const url = `${this.apiURL}/${id}`; return this.http.delete(url, httpOptions);
+    const url = `${this.apiURL}/delvet/${id}`;
+    let jwt = this.authService.getToken();
+    jwt = "Bearer "+jwt;
+    let httpHeaders = new HttpHeaders({"Authorization":jwt}) 
+    return this.http.delete(url, {headers:httpHeaders});
   }
 
 
 
   consulterVetement(id: number): Observable<Vetement> {
-    const url = `${this.apiURL}/${id}`;
-    return this.http.get<Vetement>(url);
+    const url = `${this.apiURL}/getbyid/${id}`;
+let jwt = this.authService.getToken();
+jwt = "Bearer "+jwt;
+let httpHeaders = new HttpHeaders({"Authorization":jwt}) 
+return this.http.get<Vetement>(url,{headers:httpHeaders});
+   
   }
 
   trierVetements() {
@@ -66,26 +81,37 @@ export class VetementService {
     });
   }
 
-  updateVetement(vet: Vetement): Observable<Vetement> { return this.http.put<Vetement>(this.apiURL,vet, httpOptions); }
+  updateVetement(vet: Vetement): Observable<Vetement> { 
+    
+    let jwt = this.authService.getToken();
+jwt = "Bearer "+jwt;
+let httpHeaders = new HttpHeaders({"Authorization":jwt}) 
+return this.http.put<Vetement>(this.apiURL+"/updatevet", vet, {headers:httpHeaders});
+   }
 
 
 
 
-  listeGneres(): Observable<GenreWrapper> { return this.http.get<GenreWrapper>(this.apiURLgn); }
-
+  listeGneres(): Observable<GenreWrapper> {   
+      let jwt = this.authService.getToken();
+    jwt = "Bearer "+jwt;
+    let httpHeaders = new HttpHeaders({"Authorization":jwt})
+    return  this.http.get<GenreWrapper>(this.apiURLgn,{headers:httpHeaders});
+  }
   /*consulterGenre(id:number): Genre{
     return this.genres.find(gn=> gn.idGenre == id)!;
     }*/
+   
 
-  rechercherParGenre(idGenre: number): Observable<Vetement[]> 
-  { const url = `${this.apiURL}/vetcgen/${idGenre}`;
-   return this.http.get<Vetement[]>(url); }
-
+    rechercherParGenre(idGenre: number): Observable<Vetement[]> 
+    { const url = `${this.apiURL}/vetcgen/${idGenre}`;
+     return this.http.get<Vetement[]>(url); }
+  
+    
 
    rechercherParNom(nom: string):Observable<Vetement[]> {
-     const url = `${this.apiURL}/vetsByName/${nom}`;
-     return this.http.get<Vetement[]>(url);
-     
+    const url = `${this.apiURL}/vetsByName/${nom}`;
+return this.http.get<Vetement[]>(url)
 
 }
 ajouterGenre( gen: Genre):Observable<Genre>{
