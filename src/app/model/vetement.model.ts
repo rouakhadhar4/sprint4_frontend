@@ -1,5 +1,3 @@
-import { Genre } from "./genre.model";
-
 export class Vetement {
     idVetement! : number;
     nomVetement! : string;
@@ -7,6 +5,5 @@ export class Vetement {
     dateCreation! : Date ;
     couleur! : string ;
     taille! : string ;
-    genre!: Genre;
-    }
-    
+}
+
